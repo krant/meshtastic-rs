@@ -57,7 +57,15 @@ where
     loop {
         let mut buffer = [0u8; 1024];
         match read_stream.read(&mut buffer).await {
-            Ok(0) => continue,
+            Ok(0) => {
+                let e = std::io::Error::from(std::io::ErrorKind::BrokenPipe);
+                error!("Error reading from stream: {:?}", e);
+                return Err(Error::InternalStreamError(
+                    InternalStreamError::StreamReadError {
+                        source: Box::new(e),
+                    },
+                ));
+            }
             Ok(n) => {
                 trace!("Read {} bytes from stream", n);
                 let data: IncomingStreamData = buffer[..n].to_vec().into();
