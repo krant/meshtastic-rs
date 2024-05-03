@@ -5,12 +5,14 @@ fn main() -> std::io::Result<()> {
     println!("cargo:rerun-if-changed={}", protobufs_dir);
 
     // Allows protobuf compilation without installing the `protoc` binary
-    match protoc_bin_vendored::protoc_bin_path() {
-        Ok(protoc_path) => {
-            std::env::set_var("PROTOC", protoc_path);
-        }
-        Err(err) => {
-            println!("Install protoc yourself, protoc-bin-vendored failed: {err}");
+    if std::env::var_os("PROTOC").is_none() {
+        match protoc_bin_vendored::protoc_bin_path() {
+            Ok(protoc_path) => {
+                std::env::set_var("PROTOC", protoc_path);
+            }
+            Err(err) => {
+                println!("Install protoc yourself, protoc-bin-vendored failed: {err}");
+            }
         }
     }
 
